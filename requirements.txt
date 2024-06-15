@@ -1,0 +1,10 @@
+labelme==5.3.0
+pycocotools
+video-cli
+ultralytics
+albumentations
+jupyter
+pycocotools
+fastapi
+uvicorn
+# imantics
