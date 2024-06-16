@@ -20,4 +20,6 @@ pip3 install torch torchvision torchaudio --index-url https://download.pytorch.o
 
 (torchvision有可能會不是gpu版本，安裝後請用pip list 確認後面是否有+cu11x)
 ```
-啟動指令 python run.py --[mode](有 dev，prod，test三種)
+啟動指令 python run.py --[mode](有 dev，prod，test三種) --db [sql](有 postgresql和mysql，預設是postgresql)
+
+預設swagger路徑在 /docs下

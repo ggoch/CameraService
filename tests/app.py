@@ -48,10 +48,3 @@ else:
     app.include_router(infor_router)
     app.include_router(user_router)
     app.include_router(item_router)
-
-
-@app.get("/")
-def hello_world():
-    return "Hello World"
-
-

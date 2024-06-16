@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15.1
+    container_name: fastapi_postgres_dev
+    environment:
+      POSTGRES_USER: fastapi_tutorial
+      POSTGRES_PASSWORD: fastapi_tutorial_password
+      POSTGRES_DB: fastapi_tutorial
+    ports:
+      - "5432:5432"
+    volumes:
+      - fastapi_tutorial_postgres_dev:/var/lib/postgresql/data
+
+  mysql:
+    image: mysql:8.1
+    container_name: fastapi_mysql_dev
+    environment:
+      MYSQL_USER: fastapi_tutorial
+      MYSQL_ROOT_PASSWORD: fastapi_tutorial_password
+      MYSQL_DATABASE: fastapi_tutorial
+    ports:
+      - "3305:3306"
+    volumes:
+      - fastapi_tutorial_mysql_dev:/var/lib/mysql
+
+volumes:
+  fastapi_tutorial_postgres_dev:
+  fastapi_tutorial_mysql_dev:
