@@ -23,3 +23,5 @@ pip3 install torch torchvision torchaudio --index-url https://download.pytorch.o
 啟動指令 python run.py --[mode](有 dev，prod，test三種) --db [sql](有 postgresql和mysql，預設是postgresql)
 
 預設swagger路徑在 /docs下
+
+參考網址https://ithelp.ithome.com.tw/articles/10337357
