@@ -1,9 +1,9 @@
 version: '3.8'
 
 services:
-  postgres:
+  postgresql:
     image: postgres:15.1
-    container_name: fastapi_postgres_dev
+    container_name: postgresql
     environment:
       POSTGRES_USER: fastapi_tutorial
       POSTGRES_PASSWORD: fastapi_tutorial_password
@@ -12,19 +12,63 @@ services:
       - "5432:5432"
     volumes:
       - fastapi_tutorial_postgres_dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "fastapi_tutorial", "-d", "fastapi_tutorial"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
-  mysql:
-    image: mysql:8.1
-    container_name: fastapi_mysql_dev
-    environment:
-      MYSQL_USER: fastapi_tutorial
-      MYSQL_ROOT_PASSWORD: fastapi_tutorial_password
-      MYSQL_DATABASE: fastapi_tutorial
+  redis:
+    container_name: redis
+    image: redis:alpine
     ports:
-      - "3305:3306"
+      - "6379:6379"
+    command: redis-server --notify-keyspace-events Egx
     volumes:
-      - fastapi_tutorial_mysql_dev:/var/lib/mysql
+      - fastapi_tutorial_redis_dev:/data  
+    healthcheck:
+      test: ["CMD", "redis-cli","ping"]
+    restart: always
+
+  # mysql:
+  #   image: mysql:8.1
+  #   container_name: mysql
+  #   environment:
+  #     MYSQL_USER: fastapi_tutorial
+  #     MYSQL_ROOT_PASSWORD: fastapi_tutorial_password
+  #     MYSQL_DATABASE: fastapi_tutorial
+  #   ports:
+  #     - "3305:3306"
+  #   volumes:
+  #     - fastapi_tutorial_mysql_dev:/var/lib/mysql
+  #   healthcheck:
+  #       test: ["CMD", "echo" , ">/dev/tcp/localhost/3306"]
+  #       interval: 5s
+  #       timeout: 5s
+  #       retries: 5
+
+  backend:
+    image: camera-service:latest
+    # build: ./backend
+    # volumes:
+    #   - ./backend/:/usr/backend/
+    env_file:
+      - ./backend/.env/.env.dev
+    ports:
+      - 8000:8003
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgresql:
+        condition: service_healthy
+    command: python3 run.py --prod
+    restart: always
 
 volumes:
   fastapi_tutorial_postgres_dev:
   fastapi_tutorial_mysql_dev:
+  fastapi_tutorial_redis_dev:
+
+networks:
+  default: 
+    name: fastapi_tutorial_network
