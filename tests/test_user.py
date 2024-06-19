@@ -3,6 +3,8 @@ import pytest
 import json
 from functools import lru_cache
 
+from tests.conftest import async_session
+
 @lru_cache()
 def get_user_data():
     with open("data/user_data.json") as f:

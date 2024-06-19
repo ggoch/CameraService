@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from auth.passwd import get_password_hash
 from database.generic import get_db, manager_class_decorator
+from database.redis_cache import generic_cache_get, generic_cache_update, generic_pagenation_cache_get, user_cache_delete
 from entitys.users import User as UserModel
 from schemas import users as UserSchema
 
@@ -14,6 +15,7 @@ from schemas import users as UserSchema
 @manager_class_decorator
 class UserManager:
 
+    @generic_pagenation_cache_get(prefix="user",cls=UserSchema.UserRead)
     async def get_users(
         self,
         db_session: AsyncSession,
@@ -38,6 +40,7 @@ class UserManager:
 
         return None
 
+    @generic_cache_get(prefix="user",key="user_id",cls=UserSchema.UserRead)
     async def get_user_by_id(self, user_id: int, db_session: AsyncSession):
         stmt = select(
             UserModel.name, UserModel.id, UserModel.email, UserModel.avatar
@@ -70,6 +73,7 @@ class UserManager:
 
         return user
 
+    @generic_cache_update(prefix="user",key="user_id")
     async def update_user(
         self,
         user_id: int,
@@ -92,6 +96,7 @@ class UserManager:
 
         return newUser
 
+    @generic_cache_update(prefix="user",key="user_id")
     async def update_user_password(
         self,
         user_id: int,
@@ -110,6 +115,7 @@ class UserManager:
         await db_session.execute(stmt)
         await db_session.commit()
 
+    @generic_cache_get(prefix="user",key="email",cls=UserSchema.UserInDB)
     async def get_user_in_db(
         self, email: str, db_session: AsyncSession = None
     ) -> UserSchema.UserInDB:
@@ -123,6 +129,7 @@ class UserManager:
 
         return None
 
+    @user_cache_delete(prefix="user",key="user_id")
     async def delete_user(self, user_id: int, db_session: AsyncSession):
         stmt = delete(UserModel).where(UserModel.id == user_id)
         await db_session.execute(stmt)

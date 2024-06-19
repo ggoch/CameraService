@@ -10,17 +10,43 @@ if settings.run_mode == "ASYNC":
     from api.users import router as user_router
     from api.items import router as item_router
     from api.auth import router as auth_router
-    from database.generic import init_db , close_db
+    from database.generic import init_db, close_db
+    from sqlalchemy.schema import CreateTable
+    import entitys
+
+    async def init_test_db():
+        from setting.config import get_settings
+        from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+
+        settings = get_settings()
+        engine = create_async_engine(
+            settings.database_url,
+            echo=True,
+            pool_pre_ping=True,
+            connect_args={"check_same_thread": False},
+        )
+        SessionLocal = async_sessionmaker(
+            autocommit=False, autoflush=False, bind=engine
+        )
+        async with SessionLocal() as db:
+            async with db.begin():
+                await db.execute(
+                    CreateTable(entitys.User.__table__, if_not_exists=True)
+                )
+                await db.execute(
+                    CreateTable(entitys.Item.__table__, if_not_exists=True)
+                )
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         # Startup event
         print("Application startup")
-        await init_db()
+        # await init_db()
+        await init_test_db()
         yield
         # Shutdown event
         print("Application shutdown")
-        await close_db()
+        # await close_db()
 
     app = FastAPI(lifespan=lifespan)
 

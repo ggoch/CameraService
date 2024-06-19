@@ -19,6 +19,8 @@ class Settings():
     refresh_token_secret:str = os.getenv("REFRESH_TOKEN_SECRET")
     refresh_token_expire_minutes:int = int(os.getenv("REFRESH_TOKEN_EXPIRE_MINUTES"))
 
+    redis_url:str = os.getenv("REDIS_URL")
+
 @lru_cache()
 def get_settings():
     load_dotenv( f".env.{os.getenv('APP_MODE')}")

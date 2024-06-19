@@ -26,4 +26,9 @@ pytest
 pytest-asyncio
 httpx
 pytest-sugar
+pytest-mock-resources
+aiosqlite
+#others
+redis
+redis-om
 # imantics

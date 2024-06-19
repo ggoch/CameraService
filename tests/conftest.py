@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 
 from httpx import AsyncClient
 import pytest_asyncio
+from sqlalchemy.schema import CreateTable
+import entitys
 
 
 def pytest_addoption(parser):
@@ -21,8 +23,8 @@ def pytest_addoption(parser):
     parser.addoption(
         "--db",
         help="Run the server in database type.",
-        choices=["mysql", "postgresql"],
-        default="postgresql",
+        choices=["mysql", "postgresql", "sqlite"],
+        default="sqlite",
     )
 
 
@@ -38,11 +40,11 @@ async def dependencies(request):
     args = request.config
 
     if args.getoption("prod"):
-        load_dotenv("../setting/.env.prod")
-    elif args.getoption("test"):
-        load_dotenv("../setting/.env.test")
+        load_dotenv("./setting/.env.prod")
+    elif args.getoption("dev"):
+        load_dotenv("./setting/.env.dev")
     else:
-        load_dotenv("../setting/.env.dev")
+        load_dotenv("./setting/.env.test")
 
     if args.getoption("sync"):
         os.environ["RUN_MODE"] = "SYNC"
@@ -60,8 +62,24 @@ async def async_client(dependencies) -> AsyncClient:
     async with AsyncClient(app=app, base_url="http://test") as client:
         yield client
 
+
 @pytest.fixture(scope="module")
 async def get_user_data():
     with open("data/user_data.json") as f:
         data = json.load(f)
     return data
+
+
+@pytest.fixture(scope="function")
+async def async_session(init_test_db):
+    from setting.config import get_settings
+    from sqlalchemy.ext.asyncio import create_async_engine,async_sessionmaker
+
+    settings = get_settings()
+    engine = create_async_engine(settings.database_url, echo=True, pool_pre_ping=True)
+    async_session_factory = async_sessionmaker(
+        autocommit=False, autoflush=False, bind=engine
+    )
+    async with async_session_factory() as session:
+        yield session
+        await session.rollback()
