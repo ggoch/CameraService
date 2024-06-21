@@ -7,6 +7,8 @@ settings = get_settings()
 
 redis_pool = redis.ConnectionPool.from_url(settings.redis_url, decode_responses=True)
 
+not_decode_redis_pool = redis.ConnectionPool.from_url(settings.redis_url, decode_responses=False)
+
 
 def check_has_all_keys(result: dict, cls: object):
     """

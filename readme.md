@@ -6,7 +6,7 @@
 假設你已安裝完python3，在專案目錄下用CMD開啟(絕對路徑不能有中文)
 
 ```cmd
-建立虛擬環境病雞依賴安裝在橡木資料夾，避免汙染全域環境
+建立虛擬環境本機依賴安裝在項目資料夾，避免汙染全域環境
 python -m venv cuda
 
 cuda\Scripts\activate

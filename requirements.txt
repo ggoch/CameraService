@@ -4,7 +4,7 @@ video-cli
 ultralytics
 albumentations
 jupyter
-pycocotools
+ffmpeg
 fastapi
 uvicorn
 # database

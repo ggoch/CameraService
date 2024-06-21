@@ -33,4 +33,4 @@ if __name__ == "__main__":
 
     os.environ["DB_TYPE"] = args.db
 
-    uvicorn.run("main:app", host="0.0.0.0" , port=int(os.getenv("PORT")) , reload=bool(os.getenv("RELOAD")) )
+    uvicorn.run("main:app", host="0.0.0.0" , port=int(os.getenv("PORT")) , reload=bool(os.getenv("RELOAD")),workers=4 )
