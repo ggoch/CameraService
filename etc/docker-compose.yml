@@ -47,21 +47,39 @@ services:
   #       timeout: 5s
   #       retries: 5
 
-  # backend:
-  #   image: camera-service:latest
-  #   # volumes:
-  #   #   - ./backend/:/usr/backend/
-  #   env_file:
-  #     - ./backend/.env/.env.dev
-  #   ports:
-  #     - 8000:8003
-  #   depends_on:
-  #     redis:
-  #       condition: service_healthy
-  #     postgresql:
-  #       condition: service_healthy
-  #   command: python3 run.py --prod
-  #   restart: always
+  backend:
+    image: camera-service:latest
+    container_name: backend
+    # volumes:
+    #   - ./backend/:/usr/backend/
+    env_file:
+      - ./backend/.env/.env.dev
+    ports:
+      - 8000:8003
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgresql:
+        condition: service_healthy
+    command: python3 run.py --prod
+    restart: always
+
+  workers:
+    image: camera-service:latest
+    container_name: workers
+    # volumes:
+    #   - ./backend/:/usr/backend/
+    env_file:
+      - ./backend/.env/.env.dev
+    ports:
+      - 8000:8003
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgresql:
+        condition: service_healthy
+    command: python3 run.py --prod
+    restart: always
 
 volumes:
   fastapi_tutorial_postgres_dev:

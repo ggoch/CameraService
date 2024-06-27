@@ -21,6 +21,9 @@ class Settings():
 
     redis_url:str = os.getenv("REDIS_URL")
 
+    celery_broker_url:str = os.getenv("CELERY_BROKER_URL")
+    celery_result_backend:str = os.getenv("CELERY_RESULT_BACKEND")
+
 @lru_cache()
 def get_settings():
     load_dotenv( f".env.{os.getenv('APP_MODE')}")

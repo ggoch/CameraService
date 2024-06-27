@@ -1,8 +1,11 @@
+import asyncio
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 
-import redis
+# import redis
+import redis.asyncio as redis
 
+from handlers.handler_camera_event import sub_camera_event
 from setting.config import get_settings
 
 settings = get_settings()
@@ -24,11 +27,14 @@ if settings.run_mode == "ASYNC":
         print("Application startup")
         rc = redis.Redis(connection_pool=not_decode_redis_pool)
 
-        await init_db()
-        await init_camera_service(rc)
+        # await init_db()
+        # await init_camera_service(rc)
+        # await sub_camera_event(rc)
+        task = asyncio.create_task(sub_camera_event(rc))
         yield
         # Shutdown event
         print("Application shutdown")
+        task.cancel()
         await close_db()
 
     app = FastAPI(lifespan=lifespan)

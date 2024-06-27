@@ -1,4 +1,5 @@
-import redis
+# import redis
+import redis.asyncio as redis
 from setting.config import get_settings
 import ast
 

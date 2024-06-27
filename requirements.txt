@@ -31,4 +31,7 @@ aiosqlite
 #others
 redis
 redis-om
+celery
+#celery windows 10 bug
+eventlet
 # imantics
