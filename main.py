@@ -35,6 +35,8 @@ if settings.run_mode == "ASYNC":
         # Shutdown event
         print("Application shutdown")
         task.cancel()
+        not_decode_redis_pool.close()
+        await not_decode_redis_pool.wait_closed()
         await close_db()
 
     app = FastAPI(lifespan=lifespan)

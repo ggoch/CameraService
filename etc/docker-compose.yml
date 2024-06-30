@@ -78,7 +78,7 @@ services:
         condition: service_healthy
       postgresql:
         condition: service_healthy
-    command: python3 run.py --prod
+    command: python3 run_worker.py --prod
     restart: always
 
 volumes:

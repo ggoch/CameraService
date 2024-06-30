@@ -9,24 +9,37 @@ from works.celery_worker import write_img
 
 async def handle_image(redis_client: Redis,message_id,path_to_save = "./camera_save"):
     # 从 Redis Hash 中获取图像和附加信息
-    image_data = await redis_client.hget(message_id, 'image')
-    timestamp = await redis_client.hget(message_id, 'timestamp')
-    millisecondsSinceEpoch = await redis_client.hget(message_id, 'millisecondsSinceEpoch')
-    width = await redis_client.hget(message_id, 'width')
-    height = await redis_client.hget(message_id, 'height')
-    no = await redis_client.hget(message_id, 'no')
-    displayName = await redis_client.hget(message_id, 'displayName')
-    description = await redis_client.hget(message_id, 'description')
-    laneId = await redis_client.hget(message_id, 'laneId')
+    # image_data = await redis_client.hget(message_id, 'image')
+    # timestamp = await redis_client.hget(message_id, 'timestamp')
+    # millisecondsSinceEpoch = await redis_client.hget(message_id, 'millisecondsSinceEpoch')
+    # width = await redis_client.hget(message_id, 'width')
+    # height = await redis_client.hget(message_id, 'height')
+    # no = await redis_client.hget(message_id, 'no')
+    # displayName = await redis_client.hget(message_id, 'displayName')
+    # description = await redis_client.hget(message_id, 'description')
+    # laneId = await redis_client.hget(message_id, 'laneId')
 
-    timestamp = timestamp.decode('utf-8') if timestamp else None
-    millisecondsSinceEpoch = int(millisecondsSinceEpoch.decode('utf-8')) if millisecondsSinceEpoch else None
-    width = int(width.decode('utf-8')) if width else None
-    height = int(height.decode('utf-8')) if height else None
-    no = no.decode('utf-8') if no else None
-    displayName = displayName.decode('utf-8') if displayName else None
-    description = description.decode('utf-8') if description else None
-    laneId = laneId.decode('utf-8') if laneId else None
+    # timestamp = timestamp.decode('utf-8') if timestamp else None
+    # millisecondsSinceEpoch = int(millisecondsSinceEpoch.decode('utf-8')) if millisecondsSinceEpoch else None
+    # width = int(width.decode('utf-8')) if width else None
+    # height = int(height.decode('utf-8')) if height else None
+    # no = no.decode('utf-8') if no else None
+    # displayName = displayName.decode('utf-8') if displayName else None
+    # description = description.decode('utf-8') if description else None
+    # laneId = laneId.decode('utf-8') if laneId else None
+
+    hash_data = await redis_client.hgetall(message_id)
+
+    # 从hash_data中提取字段
+    image_data = hash_data.get(b'image')
+    timestamp = hash_data.get(b'timestamp').decode('utf-8')
+    millisecondsSinceEpoch = hash_data.get(b'millisecondsSinceEpoch').decode('utf-8')
+    width = int(hash_data.get(b'width').decode('utf-8'))
+    height = int(hash_data.get(b'height').decode('utf-8'))
+    no = hash_data.get(b'no').decode('utf-8')
+    displayName = hash_data.get(b'displayName').decode('utf-8')
+    description = hash_data.get(b'description').decode('utf-8')
+    laneId = hash_data.get(b'laneId').decode('utf-8')
 
     # 將timestamp轉換為可讀的格式並作為檔案名稱的一部分
     # try:
@@ -80,4 +93,4 @@ async def sub_camera_event(redis_client: Redis,channel_name:str="image_channel")
             if message['type'] == 'message':
                 message_id = message['data'].decode('utf-8')
                 await handle_image(redis_client,message_id)
-        # await asyncio.sleep(0.1)  # 短暂休眠以避免高 CPU 占用
+        await asyncio.sleep(0.01)  # 短暂休眠以避免高 CPU 占用
