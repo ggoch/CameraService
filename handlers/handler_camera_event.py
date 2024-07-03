@@ -9,25 +9,6 @@ from works.celery_worker import write_img
 
 async def handle_image(redis_client: Redis,message_id,path_to_save = "./camera_save"):
     # 从 Redis Hash 中获取图像和附加信息
-    # image_data = await redis_client.hget(message_id, 'image')
-    # timestamp = await redis_client.hget(message_id, 'timestamp')
-    # millisecondsSinceEpoch = await redis_client.hget(message_id, 'millisecondsSinceEpoch')
-    # width = await redis_client.hget(message_id, 'width')
-    # height = await redis_client.hget(message_id, 'height')
-    # no = await redis_client.hget(message_id, 'no')
-    # displayName = await redis_client.hget(message_id, 'displayName')
-    # description = await redis_client.hget(message_id, 'description')
-    # laneId = await redis_client.hget(message_id, 'laneId')
-
-    # timestamp = timestamp.decode('utf-8') if timestamp else None
-    # millisecondsSinceEpoch = int(millisecondsSinceEpoch.decode('utf-8')) if millisecondsSinceEpoch else None
-    # width = int(width.decode('utf-8')) if width else None
-    # height = int(height.decode('utf-8')) if height else None
-    # no = no.decode('utf-8') if no else None
-    # displayName = displayName.decode('utf-8') if displayName else None
-    # description = description.decode('utf-8') if description else None
-    # laneId = laneId.decode('utf-8') if laneId else None
-
     hash_data = await redis_client.hgetall(message_id)
 
     # 从hash_data中提取字段
@@ -88,9 +69,13 @@ async def sub_camera_event(redis_client: Redis,channel_name:str="image_channel")
     await pubsub.subscribe(channel_name)
 
     while True:
-        message = await pubsub.get_message(ignore_subscribe_messages=True)
-        if message:
-            if message['type'] == 'message':
-                message_id = message['data'].decode('utf-8')
-                await handle_image(redis_client,message_id)
+        try:
+            message = await pubsub.get_message(ignore_subscribe_messages=True)
+            if message:
+                if message['type'] == 'message':
+                    message_id = message['data'].decode('utf-8')
+                    await handle_image(redis_client,message_id)
+        except Exception as e:
+            print(f"Error while processing message: {e}")
+            # logger
         await asyncio.sleep(0.01)  # 短暂休眠以避免高 CPU 占用

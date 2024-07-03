@@ -2,3 +2,9 @@ __pycache__
 .pytest_cache
 Dockerfile
 .dockignore
+cuda
+camera_caches
+camera_save
+
+# pyenv
+.python-version

@@ -32,4 +32,5 @@ if __name__ == "__main__":
     os.environ["DB_TYPE"] = args.db
 
      # 運行 Celery 工作進程的命令
-    os.system('celery -A works.celery_worker worker --loglevel=info -P eventlet')
+    # os.system('celery -A works.celery_worker worker --loglevel=info -P eventlet')
+    os.system('celery -A works.celery_worker worker --loglevel=info')

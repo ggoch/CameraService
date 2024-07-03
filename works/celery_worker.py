@@ -3,6 +3,9 @@ from setting.config import get_settings
 import cv2
 import numpy as np
 import os
+# from detect_models.get_detect_model import get_model
+
+# thing_model = get_model('PredictThing')
 
 settings = get_settings()
 
@@ -26,25 +29,31 @@ celery_app.conf.update(
 @celery_app.task
 def write_img(image_data, message_id,millisecondsSinceEpoch, path_to_save):
 
-    readable_timestamp = millisecondsSinceEpoch
-    # 將位元組數組轉換為圖像
-    nparr = np.frombuffer(image_data, np.uint8)
-    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+    try:
+        readable_timestamp = millisecondsSinceEpoch
+        # 將位元組數組轉換為圖像
+        nparr = np.frombuffer(image_data, np.uint8)
+        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
-    if img is None:
-        print(f"Failed to decode image for message ID {message_id}")
-        return
-    
-    save_dir = os.path.join(path_to_save, f'{message_id}')
+        if img is None:
+            print(f"Failed to decode image for message ID {message_id}")
+            return
 
-    if not os.path.exists(save_dir):
-        os.makedirs(save_dir)
+        save_dir = os.path.join(path_to_save, f'{message_id}')
 
-    # 儲存處理後的影像
-    save_path = os.path.join(save_dir, f'processed_image_{readable_timestamp}.png')
-    success = cv2.imwrite(save_path, img)
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
 
-    if success:
-        print(f"Image saved successfully at {save_path}")
-    else:
-        print(f"Failed to save image at {save_path}")
+        # 儲存處理後的影像
+        save_path = os.path.join(save_dir, f'processed_image_{readable_timestamp}.png')
+        success = cv2.imwrite(save_path, img)
+
+        # result = thing_model.detect(img)
+
+
+        if success:
+            print(f"Image saved successfully at {save_path}")
+        else:
+            print(f"Failed to save image at {save_path}")
+    except Exception as e:
+        print(f"An error occurred while processing image for message ID {message_id}: {e}")

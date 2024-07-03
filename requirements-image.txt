@@ -1,0 +1,40 @@
+# labelme==5.3.0
+# pycocotools
+# video-cli
+# ultralytics
+numpy
+opencv-python-headless
+requests
+# albumentations
+# jupyter
+# ffmpeg
+fastapi
+uvicorn
+# --- database ---
+psycopg2
+PyMySQL
+cryptography
+sqlalchemy
+#--- async database ---
+asyncpg
+greenlet
+aiomysql
+#password
+passlib
+bcrypt
+python-multipart
+python-jose
+# test
+# pytest
+# pytest-asyncio
+# httpx
+# pytest-sugar
+# pytest-mock-resources
+# aiosqlite
+#--- others ---
+redis
+redis-om
+celery
+#--- celery windows 10 bug ---
+eventlet
+# imantics

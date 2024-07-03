@@ -12,3 +12,4 @@ wbdatas/
 .ipynb_checkpoints/
 camera_caches/
 camera_save/
+publish-image.ps1

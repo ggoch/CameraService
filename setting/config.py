@@ -24,6 +24,8 @@ class Settings():
     celery_broker_url:str = os.getenv("CELERY_BROKER_URL")
     celery_result_backend:str = os.getenv("CELERY_RESULT_BACKEND")
 
+    thing_predict_model_path:str = os.getenv("THING_PREDICT_MODEL_PATH")
+
 @lru_cache()
 def get_settings():
     load_dotenv( f".env.{os.getenv('APP_MODE')}")
