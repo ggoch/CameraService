@@ -3,6 +3,7 @@ from setting.config import get_settings
 import cv2
 import numpy as np
 import os
+from kombu import Exchange, Queue
 # from detect_models.get_detect_model import get_model
 
 # thing_model = get_model('PredictThing')
@@ -22,8 +23,19 @@ celery_app.conf.update(
         accept_content=['json', 'pickle'],
         timezone='UTC',
         enable_utc=True,
-        result_expires=60,
+        task_ignore_result=True,  # 全局禁用任务结果存储
+        task_track_started=False,  # 禁用任务状态跟踪
+        result_expires=1,
+        worker_max_tasks_per_child=20,
     )
+
+celery_app.conf.task_queues = (
+    Queue('default', Exchange('default'), routing_key='default', queue_arguments={'x-max-length': 30}),
+)
+
+celery_app.conf.task_default_queue = 'default'
+celery_app.conf.task_default_exchange = 'default'
+celery_app.conf.task_default_routing_key = 'default'
 
 # 定義 Celery 任務
 @celery_app.task
@@ -45,10 +57,11 @@ def write_img(image_data, message_id,millisecondsSinceEpoch, path_to_save):
             os.makedirs(save_dir)
 
         # 儲存處理後的影像
+        # print(f'processed_image_{readable_timestamp}.png')
+        # result = thing_model.detect(img)
         save_path = os.path.join(save_dir, f'processed_image_{readable_timestamp}.png')
         success = cv2.imwrite(save_path, img)
 
-        # result = thing_model.detect(img)
 
 
         if success:

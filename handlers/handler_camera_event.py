@@ -36,7 +36,8 @@ async def handle_image(redis_client: Redis,message_id,path_to_save = "./camera_s
     #     readable_timestamp = "unknown_time"
     readable_timestamp = millisecondsSinceEpoch
 
-    write_img.delay(image_data, message_id,readable_timestamp,path_to_save)
+    # write_img.delay(image_data, message_id,readable_timestamp,path_to_save)
+    write_img.apply_async(args=[image_data, message_id,readable_timestamp,path_to_save],expires=2)
     
 
     # # 將位元組數組轉換為圖像
@@ -78,4 +79,4 @@ async def sub_camera_event(redis_client: Redis,channel_name:str="image_channel")
         except Exception as e:
             print(f"Error while processing message: {e}")
             # logger
-        await asyncio.sleep(0.01)  # 短暂休眠以避免高 CPU 占用
+        await asyncio.sleep(0.1)  # 短暂休眠以避免高 CPU 占用
