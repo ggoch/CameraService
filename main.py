@@ -27,7 +27,7 @@ if settings.run_mode == "ASYNC":
         print("Application startup")
         rc = redis.Redis(connection_pool=not_decode_redis_pool)
 
-        # await init_db()
+        await init_db()
         # await init_camera_service(rc)
         # await sub_camera_event(rc)
         task = asyncio.create_task(sub_camera_event(rc))

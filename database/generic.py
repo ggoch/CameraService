@@ -32,6 +32,8 @@ async def init_db():
         async with db.begin():
             await db.execute(CreateTable(entitys.User.__table__,if_not_exists=True))
             await db.execute(CreateTable(entitys.Item.__table__,if_not_exists=True))
+            await db.execute(CreateTable(entitys.ThingPredictLog.__table__,if_not_exists=True))
+            await db.execute(CreateTable(entitys.CarNoPredictLog.__table__,if_not_exists=True))
 
 
 

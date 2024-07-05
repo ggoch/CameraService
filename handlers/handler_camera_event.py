@@ -23,21 +23,30 @@ async def handle_image(redis_client: Redis,message_id,path_to_save = "./camera_s
     laneId = hash_data.get(b'laneId').decode('utf-8')
 
     # 將timestamp轉換為可讀的格式並作為檔案名稱的一部分
-    # try:
-    #     if '下午' in timestamp:
-    #         timestamp = timestamp.replace('下午', 'PM')
-    #     elif '上午' in timestamp:
-    #         timestamp = timestamp.replace('上午', 'AM')
+    try:
+        if '下午' in timestamp:
+            timestamp = timestamp.replace('下午', 'PM')
+        elif '上午' in timestamp:
+            timestamp = timestamp.replace('上午', 'AM')
 
-    #     readable_timestamp = datetime.datetime.strptime(timestamp, '%Y/%m/%d %p %I:%M:%S').strftime("%Y%m%d_%H%M%S")
-    #     # readable_timestamp = datetime.datetime.fromisoformat(timestamp).strftime("%Y%m%d_%H%M%S")
-    # except Exception as e:
-    #     print(f"Failed to convert timestamp for message ID {message_id}: {e}")
-    #     readable_timestamp = "unknown_time"
+        readable_timestamp = datetime.datetime.strptime(timestamp, '%Y/%m/%d %p %I:%M:%S').strftime("%Y%m%d_%H%M%S")
+        # readable_timestamp = datetime.datetime.fromisoformat(timestamp).strftime("%Y%m%d_%H%M%S")
+    except Exception as e:
+        print(f"Failed to convert timestamp for message ID {message_id}: {e}")
+        readable_timestamp = "unknown_time"
     readable_timestamp = millisecondsSinceEpoch
 
     # write_img.delay(image_data, message_id,readable_timestamp,path_to_save)
-    write_img.apply_async(args=[image_data, message_id,readable_timestamp,path_to_save],expires=2)
+    write_img.apply_async(args=[
+        image_data, 
+        message_id,
+        readable_timestamp,
+        path_to_save,
+        no,
+        timestamp,
+        laneId,
+        ],
+        expires=2)
     
 
     # # 將位元組數組轉換為圖像
