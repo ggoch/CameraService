@@ -4,6 +4,7 @@ services:
   postgresql:
     image: postgres:15.1
     container_name: postgresql
+    restart: always
     environment:
       POSTGRES_USER: fastapi_tutorial
       POSTGRES_PASSWORD: fastapi_tutorial_password
@@ -30,6 +31,28 @@ services:
       test: ["CMD", "redis-cli","ping"]
     restart: always
 
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    hostname: 'rabbitmq'
+    restart: always
+    container_name: rabbitmq
+    environment:
+        # RABBITMQ_ERLANG_COOKIE: "SWQOKODSQALRPCLNMEQG"
+        RABBITMQ_DEFAULT_USER: 'ggoch'
+        RABBITMQ_DEFAULT_PASS: 'ggoch'
+        RABBITMQ_DEFAULT_VHOST: "/"
+    # command: "/bin/bash -c \"rabbitmq-plugins enable --offline rabbitmq_mqtt rabbitmq_web_mqtt rabbitmq_amqp1_0; rabbitmq-server\""
+    command: "/bin/bash -c \"rabbitmq-plugins enable --offline rabbitmq_mqtt;rabbitmq-server\""
+    ports:
+        - '15672:15672'
+        - '5672:5672'
+    labels:
+        NAME: 'rabbitmq'
+    # volumes:
+    # - rabbitmqdata:/etc/rabbitmq/enabled_plugins
+    #- "./rabbitmq.config:/etc/rabbitmq/rabbitmq.config:ro"
+    #- "./autocluster-0.4.1.ez:/usr/lib/rabbitmq/lib/rabbitmq_server-3.5.5/plugins/autocluster-0.4.1.ez"
+
   # mysql:
   #   image: mysql:8.1
   #   container_name: mysql
@@ -47,42 +70,46 @@ services:
   #       timeout: 5s
   #       retries: 5
 
-  # backend:
-  #   image: camera-service-min:latest
-  #   container_name: backend
-  #   # volumes:
-  #   #   - ./backend/:/usr/backend/
-  #   env_file:
-  #     - ./backend/.env/.env.dev
-  #   ports:
-  #     - 8001:8003
-  #   depends_on:
-  #     redis:
-  #       condition: service_healthy
-  #     # postgresql:
-  #     #   condition: service_healthy
-  #   command: python3 run.py --prod
-  #   restart: always
+  backend:
+    image: camera-service:latest
+    container_name: backend
+    # volumes:
+    #   - ./backend/:/usr/backend/
+    env_file:
+      - ./backend/.env/.env.dev
+    ports:
+      - 8001:8003
+    depends_on:
+      redis:
+        condition: service_healthy
+      # postgresql:
+      #   condition: service_healthy
+    command: python3 run.py --prod
+    volumes:
+      - ./backend/camera_save:/usr/backend/camera_save
+      - ./backend/models:/usr/backend/models
+    restart: always
 
-  # workers:
-  #   user: celeryuser
-  #   image: camera-service-min:latest
-  #   container_name: workers
-  #   # volumes:
-  #   #   - ./backend/:/usr/backend/
-  #   env_file:
-  #     - ./backend/.env/.env.dev
-  #   ports:
-  #     - 8002:8003
-  #   depends_on:
-  #     redis:
-  #       condition: service_healthy
-  #     # postgresql:
-  #     #   condition: service_healthy
-  #   command: python3 run_worker.py --prod
-  #   volumes:
-  #     - ./backend/camera_save:/usr/backend/camera_save
-  #   restart: always
+  workers:
+    user: celeryuser
+    image: camera-service:latest
+    container_name: workers
+    # volumes:
+    #   - ./backend/:/usr/backend/
+    env_file:
+      - ./backend/.env/.env.dev
+    ports:
+      - 8002:8003
+    depends_on:
+      redis:
+        condition: service_healthy
+      # postgresql:
+      #   condition: service_healthy
+    command: python3 run_worker.py --prod
+    volumes:
+      - ./backend/camera_save:/usr/backend/camera_save
+      - ./backend/models:/usr/backend/models
+    restart: always
 
 volumes:
   fastapi_tutorial_postgres_dev:

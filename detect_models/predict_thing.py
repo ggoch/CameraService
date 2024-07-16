@@ -22,9 +22,6 @@ class PredictThing(ModelDetect):
     def predict_thing_img(self,img,conf=0.25,imgsz=640,e006_need_count=2):
         """
         預測指定影像中的物件，並判斷是否有指定數量的E006
-
-        return_img: 是否保存偵測到目標的圖像
-        save_path: 保存圖像的路徑
         """
 
         try:
@@ -34,7 +31,7 @@ class PredictThing(ModelDetect):
 
             if result.masks is None:
                 print(f"Not find any thing in image")
-                return False
+                return False,img
 
             area = None
             label_datas = []
@@ -74,7 +71,7 @@ class PredictThing(ModelDetect):
 
             if len(label_datas) == 0 or area is None:
                 print(f"Not find any thing in image")
-                return False
+                return False,img
 
             for label_data in label_datas:
                 if box_is_inside(label_data["boxs"],area["boxs"]):
@@ -84,16 +81,19 @@ class PredictThing(ModelDetect):
                 if find_e006_count >= e006_need_count:
                     print(f"Find {e006_need_count} e006 in image")
 
-                    return True,img   
+                    return True,img
+
+            print(f"Not find any thing in image")
+            return False,img   
         except Exception as e:
             print(f"Error processing image {img}: {e}")
-            return None
+            return None,img
     
     def crop_lane_area(self,image):
         """
         裁切車道圖片中間區域。
 
-        讓左右兩邊的車道線不會影響模型的預測結果。
+        讓左右兩邊的車道不會影響模型的預測結果。
         """
 
         # 取得影像尺寸

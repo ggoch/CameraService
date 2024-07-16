@@ -1,9 +1,12 @@
 # labelme==5.3.0
 # pycocotools
 # video-cli
-# ultralytics
-numpy
-opencv-python-headless
+ultralytics
+onnx 
+onnxruntime
+onnxruntime-gpu
+# numpy
+# opencv-python-headless
 requests
 # albumentations
 # jupyter

@@ -26,6 +26,8 @@ class Settings():
 
     thing_predict_model_path:str = os.getenv("THING_PREDICT_MODEL_PATH")
 
+    car_no_predict_model_path:str = os.getenv("CAR_NO_PREDICT_MODEL_PATH")
+
 @lru_cache()
 def get_settings():
     load_dotenv( f".env.{os.getenv('APP_MODE')}")

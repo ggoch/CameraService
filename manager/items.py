@@ -12,14 +12,14 @@ class ItemCrudManager:
     async def get_items(
         self,
         keyword: str = None,
-        last: int = 0,
-        limit: int = 50,
+        skip_count: int = 0,
+        max_count: int = 50,
         db_session: AsyncSession = None,
     ) -> list[ItemSchema.ItemRead]:
         stmt = select(ItemModel.name, ItemModel.id, ItemModel.name, ItemModel.price)
         if keyword:
             stmt = stmt.where(ItemModel.name.like(f"%{keyword}%"))
-        stmt = stmt.offset(last).limit(limit)
+        stmt = stmt.offset(skip_count).limit(max_count)
 
         result = await db_session.execute(stmt)
         items = result.all()

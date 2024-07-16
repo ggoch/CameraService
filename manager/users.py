@@ -20,13 +20,13 @@ class UserManager:
         self,
         db_session: AsyncSession,
         keyword: str = None,
-        last: int = 0,
-        limit: int = 50,
+        skip_count: int = 0,
+        max_count: int = 50,
     ):
         stmt = select(UserModel.name, UserModel.id, UserModel.email, UserModel.avatar)
         if keyword:
             stmt = stmt.where(UserModel.name.like(f"%{keyword}%"))
-        stmt = stmt.offset(last).limit(limit)
+        stmt = stmt.offset(skip_count).limit(max_count)
         result = await db_session.execute(stmt)
         users = result.all()
 

@@ -1,9 +1,11 @@
 from detect_models.predict_base import ModelDetect
 from detect_models.predict_thing import PredictThing
+from detect_models.predict_car_no import PredictCarNo
 
 
 MODELS = {
     'PredictThing': PredictThing,
+    'PredictCarNo': PredictCarNo
 }
 
 def get_model(model_name) -> ModelDetect:

@@ -16,10 +16,12 @@ if settings.run_mode == "ASYNC":
     from api.items import router as item_router
     from api.auth import router as auth_router
     from api.camera import router as camera_router
+    from api.thing_predict_log import router as thing_predict_log_router
+    from api.car_no_predict_log import router as car_no_predict_log_router
     from api.camera import live_router as camera_live_router
     from database.generic import init_db , close_db
     from services.camera_service import init_camera_service
-    from database.redis_cache import not_decode_redis_pool
+    from database.redis_cache import not_decode_redis_pool,redis_pool
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
@@ -34,10 +36,17 @@ if settings.run_mode == "ASYNC":
         yield
         # Shutdown event
         print("Application shutdown")
-        task.cancel()
-        not_decode_redis_pool.close()
-        await not_decode_redis_pool.wait_closed()
+        try:
+            task_result = task.cancel()
+            print(f"Task has been cancelled: {task_result}")
+        except asyncio.CancelledError:
+            print("Task has been cancelled")
+
+        await not_decode_redis_pool.aclose()
+        await redis_pool.aclose()
         await close_db()
+
+        print("Application shutdown done")
 
     app = FastAPI(lifespan=lifespan)
 
@@ -47,6 +56,8 @@ if settings.run_mode == "ASYNC":
     app.include_router(auth_router)
     app.include_router(camera_router)
     app.include_router(camera_live_router)
+    app.include_router(thing_predict_log_router)
+    app.include_router(car_no_predict_log_router)
 else:
     from sync.api.infor import router as infor_router
     from sync.api.users import router as user_router

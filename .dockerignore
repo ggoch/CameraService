@@ -1,10 +1,15 @@
 __pycache__
 .pytest_cache
 Dockerfile
-.dockignore
-cuda
-camera_caches
-camera_save
+.dockerignore
+cuda/
+camera_caches/
+camera_save/
+camera-service-min.tar
 
 # pyenv
 .python-version
+
+models/
+tests/
+mock_datas/

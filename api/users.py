@@ -11,8 +11,6 @@ from api.depends import (
 )
 from auth.jwt import verify_access_token
 from auth.utils import get_current_user
-from database.generic import get_db
-from mock_datas.fackdb import fake_db
 
 from schemas import users as UserSchema
 from entitys.users import User

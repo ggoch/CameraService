@@ -5,9 +5,23 @@ import numpy as np
 from redis.asyncio import Redis
 import os
 import datetime
-from works.celery_worker import write_img
+from works.tasks import detect_thing_img,detect_car_no_img
+
+laneMap = {
+    '53230D8E-A654-EF99-5204-3A059359F294': '車道1',
+    'AE291446-4980-9804-3579-3A059359F294': '車道2',
+    '406FDF75-8739-8AD5-2047-3A059359F294': '車道3',
+    'F1CE271B-0F96-7385-2D94-3A059359F294': '車道4',
+    '4BA40A15-11F9-15C1-5CFE-3A059359F294': '車道5',
+}
 
 async def handle_image(redis_client: Redis,message_id,path_to_save = "./camera_save"):
+    def try_get_position(no:str):
+        parts = no.split(".")
+        if len(parts) > -1:
+            return parts[-1]
+        return None
+    
     # 从 Redis Hash 中获取图像和附加信息
     hash_data = await redis_client.hgetall(message_id)
 
@@ -36,56 +50,61 @@ async def handle_image(redis_client: Redis,message_id,path_to_save = "./camera_s
         readable_timestamp = "unknown_time"
     readable_timestamp = millisecondsSinceEpoch
 
-    # write_img.delay(image_data, message_id,readable_timestamp,path_to_save)
-    write_img.apply_async(args=[
-        image_data, 
-        message_id,
-        readable_timestamp,
-        path_to_save,
-        no,
-        timestamp,
-        laneId,
-        ],
-        expires=2)
+    position = try_get_position(no)
+
+    if position is None:
+        print(f"Failed to get position for message ID {message_id}")
+        return
     
-
-    # # 將位元組數組轉換為圖像
-    # nparr = np.frombuffer(image_data, np.uint8)
-    # img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-
-    # # 进行图像处理（模型推断、绘图等）TODO
-    # # processed_img = process_with_model(img)
-
-    # if img is None:
-    #     print(f"Failed to decode image for message ID {message_id}")
-    #     return
+    if position == '1' or position == '2':
+        detect_thing_img.apply_async(args=[
+            image_data, 
+            message_id,
+            readable_timestamp,
+            path_to_save,
+            no,
+            displayName,
+            timestamp,
+            laneMap.get(laneId),
+            ],
+            expires=2)
+        
+    if position == '3':
+        detect_car_no_img.apply_async(args=[
+            image_data, 
+            message_id,
+            readable_timestamp,
+            path_to_save,
+            no,
+            displayName,
+            timestamp,
+            laneMap.get(laneId),
+            ],
+            expires=2)
     
-    # save_dir = os.path.join(path_to_save, f'{message_id}')
-    # # save_dir = path_to_save
-    # if not os.path.exists(save_dir):
-    #     os.makedirs(save_dir)
-
-    # # 儲存處理後的影像
-    # save_path = os.path.join(save_dir, f'processed_image_{readable_timestamp}.png')
-    # success = cv2.imwrite(save_path, img)
-
-    # if success:
-    #     print(f"Image saved successfully at {save_path}")
-    # else:
-    #     print(f"Failed to save image at {save_path}")
 
 async def sub_camera_event(redis_client: Redis,channel_name:str="image_channel"):
-    pubsub = redis_client.pubsub()
-    await pubsub.subscribe(channel_name)
-
     while True:
         try:
-            message = await pubsub.get_message(ignore_subscribe_messages=True)
-            if message:
-                if message['type'] == 'message':
-                    message_id = message['data'].decode('utf-8')
-                    await handle_image(redis_client,message_id)
+            pubsub = redis_client.pubsub()
+            await pubsub.subscribe(channel_name)
+
+            while True:
+                try:
+                    message = await pubsub.get_message(ignore_subscribe_messages=True)
+                    if message:
+                        if message['type'] == 'message':
+                            message_id = message['data'].decode('utf-8')
+                            await handle_image(redis_client, message_id)
+                except Exception as e:
+                    print(f"Error while processing message: {e}")
+                    # logger
+                await asyncio.sleep(0.1)  # 短暂休眠以避免高 CPU 占用
+        except asyncio.CancelledError:
+            # 清理工作
+            print("Task was cancelled")
+            raise
         except Exception as e:
-            print(f"Error while processing message: {e}")
-            # logger
-        await asyncio.sleep(0.1)  # 短暂休眠以避免高 CPU 占用
+            print(f"Redis connection error: {e}")
+            # 重新连接前等待一段时间
+            await asyncio.sleep(5)

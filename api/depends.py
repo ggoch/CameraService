@@ -20,14 +20,14 @@ async def check_user_id(user_id: int):
 
 
 class paginationParms:
-    def __init__(self, keyword: Optional[str] = None, last: int = 0, limit: int = 50):
+    def __init__(self, keyword: Optional[str] = None, skip_count: int = 0, max_count: int = 10):
         self.keyword = keyword
-        self.last = last
-        self.limit = limit
+        self.skip_count = skip_count
+        self.max_count = max_count
 
 
-def pagination_parms(keyword: Optional[str] = None, last: int = 0, limit: int = 50):
-    return {"keyword": keyword, "last": last, "limit": limit}
+def pagination_parms(keyword: Optional[str] = None, skip_count: int = 0, max_count: int = 10):
+    return {"keyword": keyword, "skip_count": skip_count, "max_count": max_count}
 
 
 def test_verify_token(verify_header: str = Header()):
