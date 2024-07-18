@@ -2,17 +2,14 @@ from .init_sys import init
 
 init()
 
-from celery import Celery
-from sync.manager.thing_predict_log import ThingPredictLogManager
 import cv2
 import numpy as np
 import os
-from kombu import Exchange, Queue
 from detect_models.get_detect_model import get_model
 import logging
 from works.celery_app import celery_app
-# import asyncio
-# from asgiref.sync import async_to_sync
+from works.rabbitmq_channel import publish_rabbitmq_event
+
 
 thing_model = get_model('PredictThing')
 logger = logging.getLogger(__name__)
@@ -36,8 +33,6 @@ def detect_thing_img(
         return None
 
     try:
-        thingPredictLogManager = ThingPredictLogManager()
-        
         readable_timestamp = millisecondsSinceEpoch
         # 將位元組數組轉換為圖像
         nparr = np.frombuffer(image_data, np.uint8)
@@ -68,31 +63,24 @@ def detect_thing_img(
         result = thing_model.detect(img)
         position = try_get_position(no)
 
+        event_data = {
+            "occur_time": timestamp,
+            "thing_data": str("E006") if result else str("無"),
+            "position": "車牌" if position is None else "前" if position == "1" else "後",
+            "lane_name": line_name if line_name is not None else "無",
+            "camera_name": camera_name,
+            "no": no
+            }
+        
+        publish_rabbitmq_event(event_data, 'thing_detection_queue')
+
         if result is None:
             print(f"未能檢測到圖像中的物料，消息 ID 為 {message_id}")
             logger.error(f"未能檢測到圖像中的物料，消息 ID 為 {message_id}")
-            return
         elif result == True:
-            thingPredictLogManager.create(
-                occur_time = timestamp,
-                thing_data = str("E006"),
-                position = "車牌" if position is None else "前" if position == "1" else "後",
-                lane_name = line_name,
-                camera_name = camera_name,
-                no = no
-            )
             print(f"在圖像中檢測到物料，消息 ID 為 {message_id}")
             logger.info(f"在圖像中檢測到物料，消息 ID 為 {message_id}")
         else:
-            # 測試完刪除
-            thingPredictLogManager.create(
-                occur_time = timestamp,
-                thing_data = str("無"),
-                position = "車牌" if position is None else "前" if position == "1" else "後",
-                lane_name = line_name,
-                camera_name = camera_name,
-                no = no
-            )
             print(f"未找到圖像中的物料，消息 ID 為 {message_id}")
             logger.info(f"未找到圖像中的物料，消息 ID 為 {message_id}")
 

@@ -28,6 +28,11 @@ class Settings():
 
     car_no_predict_model_path:str = os.getenv("CAR_NO_PREDICT_MODEL_PATH")
 
+    rabbitmq_host:str = os.getenv("RABBITMQ_HOST")
+    rabbitmq_port:int = int(os.getenv("RABBITMQ_PORT"))
+    rabbitmq_user:str = os.getenv("RABBITMQ_USER")
+    rabbitmq_password:str = os.getenv("RABBITMQ_PASSWORD")
+
 @lru_cache()
 def get_settings():
     load_dotenv( f".env.{os.getenv('APP_MODE')}")

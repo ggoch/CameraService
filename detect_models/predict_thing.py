@@ -2,19 +2,20 @@ import numpy as np
 import cv2
 from ultralytics import YOLO
 import json
+import torch
 
 from setting.config import get_settings
 from utils.process_box import box_is_inside
 
-from detect_models.predict_base import ModelDetect
-
 settings = get_settings()
 
-class PredictThing(ModelDetect):
+class PredictThing():
     def __init__(self):
+        cuda_available = torch.cuda.is_available()
+        print("CUDA available:", cuda_available)
         self.model = YOLO(settings.thing_predict_model_path)
 
-    def detect(self, image: np.ndarray) -> np.ndarray:
+    def detect(self, image: np.ndarray):
         crop_image = self.crop_lane_area(image)
         
         return self.predict_thing_img(crop_image,0.85)

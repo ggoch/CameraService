@@ -38,6 +38,8 @@ python-jose
 redis
 redis-om
 celery
+aio_pika
+pika
 #--- celery windows 10 bug ---
 eventlet
 # imantics

@@ -2,13 +2,13 @@ from .init_sys import init
 
 init()
 
-from sync.manager.car_no_predict_log import CarNoPredictLogManager
 import cv2
 import numpy as np
 import os
 from detect_models.get_detect_model import get_model
 import logging
 from works.celery_app import celery_app
+from works.rabbitmq_channel import publish_rabbitmq_event
 
 model = get_model('PredictCarNo')
 logger = logging.getLogger(__name__)
@@ -31,9 +31,7 @@ def detect_car_no_img(
             return parts[-1]
         return None
 
-    try:
-        carNoPredictLogManager = CarNoPredictLogManager()
-        
+    try:        
         readable_timestamp = millisecondsSinceEpoch
         # 將位元組數組轉換為圖像
         nparr = np.frombuffer(image_data, np.uint8)
@@ -51,33 +49,25 @@ def detect_car_no_img(
 
         result,img,car_no = model.detect(img)
         position = try_get_position(no)
+        
+        event_data = {
+            "occur_time": timestamp,
+            "thing_data": car_no if result else str("無"),
+            "position": "車牌" if position is None else "前" if position == "1" else "後",
+            "lane_name": line_name if line_name is not None else "無",
+            "camera_name": camera_name,
+            "no": no
+            }
+        
+        publish_rabbitmq_event(event_data, 'car_no_detection_queue')
 
         if result is None:
             print(f"未能檢測到圖像中的車牌，消息 ID 為 {message_id}")
             logger.error(f"未能檢測到圖像中的車牌，消息 ID 為 {message_id}")
-            return
         elif result == True:
-            carNoPredictLogManager.create(
-                occur_time = timestamp,
-                car_no = car_no,
-                position = "車牌" if position is None else "前" if position == "1" else "後",
-                lane_name = line_name,
-                camera_name = camera_name,
-                no = no
-            )
             print(f"在圖像中檢測到車牌，車號為 {car_no}，消息 ID 為 {message_id}")
             logger.info(f"在圖像中檢測到車牌，車號為 {car_no}，消息 ID 為 {message_id}")
         else:
-            # 測試完刪除
-            carNoPredictLogManager.create(
-                occur_time = timestamp,
-                car_no = str("無"),
-                position = "車牌" if position is None else "前" if position == "1" else "後",
-                # lane_id = line_id
-                lane_name = "無車道",
-                camera_name = camera_name,
-                no = no
-            )
             print(f"未找到圖像中的車牌，消息 ID 為 {message_id}")
             logger.info(f"未找到圖像中的車牌，消息 ID 為 {message_id}")
 

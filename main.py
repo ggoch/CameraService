@@ -7,6 +7,7 @@ import redis.asyncio as redis
 
 from handlers.handler_camera_event import sub_camera_event
 from setting.config import get_settings
+from threading import Thread
 
 settings = get_settings()
 
@@ -22,6 +23,7 @@ if settings.run_mode == "ASYNC":
     from database.generic import init_db , close_db
     from services.camera_service import init_camera_service
     from database.redis_cache import not_decode_redis_pool,redis_pool
+    from rabbitmq.heandler_event import start_consuming, create_thing_predict_log, create_car_no_predict_log
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
@@ -33,11 +35,23 @@ if settings.run_mode == "ASYNC":
         # await init_camera_service(rc)
         # await sub_camera_event(rc)
         task = asyncio.create_task(sub_camera_event(rc))
+
+        consumers = asyncio.gather(
+            start_consuming('thing_detection_queue', create_thing_predict_log),
+            start_consuming('car_no_detection_queue', create_car_no_predict_log)
+        )
+
         yield
         # Shutdown event
         print("Application shutdown")
         try:
             task_result = task.cancel()
+            print(f"Task has been cancelled: {task_result}")
+        except asyncio.CancelledError:
+            print("Task has been cancelled")
+
+        try:
+            task_result = consumers.cancel()
             print(f"Task has been cancelled: {task_result}")
         except asyncio.CancelledError:
             print("Task has been cancelled")

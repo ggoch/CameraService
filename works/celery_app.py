@@ -1,10 +1,5 @@
 from celery import Celery
-from sync.manager.thing_predict_log import ThingPredictLogManager
 from setting.config import get_settings
-import cv2
-import numpy as np
-import os
-from kombu import Exchange, Queue
 
 settings = get_settings()
 

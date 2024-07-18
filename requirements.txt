@@ -32,6 +32,9 @@ aiosqlite
 redis
 redis-om
 celery
+asgiref
+aio_pika
+pika
 #celery windows 10 bug
 eventlet
 # imantics
