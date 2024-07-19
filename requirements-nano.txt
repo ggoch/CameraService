@@ -1,0 +1,24 @@
+requests
+# albumentations
+# jupyter
+# ffmpeg
+#password
+passlib
+bcrypt
+python-multipart
+python-jose
+# test
+# pytest
+# pytest-asyncio
+# httpx
+# pytest-sugar
+# pytest-mock-resources
+# aiosqlite
+#--- others ---
+redis
+redis-om
+celery
+pika
+#--- celery windows 10 bug ---
+eventlet
+# imantics

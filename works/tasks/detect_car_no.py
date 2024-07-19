@@ -52,7 +52,7 @@ def detect_car_no_img(
         
         event_data = {
             "occur_time": timestamp,
-            "thing_data": car_no if result else str("無"),
+            "car_no": car_no if result else str("無"),
             "position": "車牌" if position is None else "前" if position == "1" else "後",
             "lane_name": line_name if line_name is not None else "無",
             "camera_name": camera_name,
