@@ -1,7 +1,6 @@
 import argparse
 import os
 from dotenv import load_dotenv
-from celery import Celery
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run the server in different modes.")
@@ -30,4 +29,4 @@ if __name__ == "__main__":
 
      # 運行 Celery 工作進程的命令
     os.system('celery -A works.celery_main worker --loglevel=info -P eventlet')
-    # os.system('celery -A works.celery_main worker --loglevel=info')
+    # os.system('celery -A works.celery_main worker --loglevel=info -c 2')

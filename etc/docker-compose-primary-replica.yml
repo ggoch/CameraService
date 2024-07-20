@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+
+  primary:
+    container_name: primary
+    image: postgres:15.1
+    expose:
+      - 5432
+    env_file:
+      - ./primary-replica/db.env
+    restart: always
+    volumes:
+      - fastapi_tutorial_postgres_primary:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgresql_user" , "-d", "postgresql_db"]
+      interval: 2s
+      timeout: 3s
+      retries: 5
+    networks:
+      fastapi_replica_network:
+        ipv4_address: 172.22.0.100
+
+  replica:
+    container_name: replica
+    image: postgres:15.1
+    expose:
+      - 5432
+    env_file:
+      - ./primary-replica/db.env
+    restart: always
+    volumes:
+      - fastapi_tutorial_postgres_replica:/var/lib/postgresql/data
+      - fastapi_tutorial_postgres_replica_copy:/var/lib/postgresql/primary_copy
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgresql_user" , "-d", "postgresql_db"]
+      interval: 2s
+      timeout: 3s
+      retries: 5
+    networks:
+      fastapi_replica_network:
+        ipv4_address: 172.22.0.101
+
+  # backend:
+  #   build: ./backend
+  #   ports:
+  #     - 8000:8003
+  #   volumes:
+  #     - ./backend/:/usr/backend/
+  #   command: python3 run.py --prod
+
+  #   restart: always
+  #   depends_on:
+  #     primary:
+  #       condition: service_healthy
+  #     replica:
+  #       condition: service_healthy
+
+volumes:
+  fastapi_tutorial_postgres_primary:
+  fastapi_tutorial_postgres_replica:
+  fastapi_tutorial_postgres_replica_copy:
+
+networks:
+  fastapi_replica_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.22.0.0/24
+          gateway: 172.22.0.1

@@ -4,7 +4,6 @@
 ultralytics
 onnx 
 onnxruntime
-onnxruntime-gpu
 # numpy
 # opencv-python-headless
 requests

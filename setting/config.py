@@ -25,13 +25,18 @@ class Settings():
     celery_result_backend:str = os.getenv("CELERY_RESULT_BACKEND")
 
     thing_predict_model_path:str = os.getenv("THING_PREDICT_MODEL_PATH")
+    thing_predict_model_task:str = os.getenv("THING_PREDICT_MODEL_TASK")
 
     car_no_predict_model_path:str = os.getenv("CAR_NO_PREDICT_MODEL_PATH")
+    car_no_predict_model_task:str = os.getenv("CAR_NO_PREDICT_MODEL_TASK")
 
     rabbitmq_host:str = os.getenv("RABBITMQ_HOST")
     rabbitmq_port:int = int(os.getenv("RABBITMQ_PORT"))
     rabbitmq_user:str = os.getenv("RABBITMQ_USER")
     rabbitmq_password:str = os.getenv("RABBITMQ_PASSWORD")
+
+    mock_publish_seconds:float = float(os.getenv("MOCK_PUBLISH_SECONDS"))
+    mock_img_path:str = os.getenv("MOCK_IMG_PATH")
 
 @lru_cache()
 def get_settings():

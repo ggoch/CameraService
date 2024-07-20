@@ -13,7 +13,9 @@ class PredictCarNo():
     def __init__(self):
         cuda_available = torch.cuda.is_available()
         print("CUDA available:", cuda_available)
-        self.model = YOLO(settings.car_no_predict_model_path)
+        init_model_img = cv2.imread("test_img.jpg")
+        self.model = YOLO(settings.car_no_predict_model_path, task=settings.car_no_predict_model_task)  # Load model
+        self.model.predict(init_model_img,conf=0.25,imgsz=1024)  # 第一次偵測會比較久，先做初始化
 
     def detect(self, image: np.ndarray):
         return self.predict_car_no_img(image,0.25)

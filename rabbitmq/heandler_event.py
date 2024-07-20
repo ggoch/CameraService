@@ -36,6 +36,7 @@ async def create_thing_predict_log(message: aio_pika.IncomingMessage):
             )
         except Exception as e:
             print(f"Failed to process message: {e}")
+            logger.error(f"Failed to process message: {e}")
 
 async def create_car_no_predict_log(message: aio_pika.IncomingMessage):
     async with message.process():
@@ -61,14 +62,26 @@ async def create_car_no_predict_log(message: aio_pika.IncomingMessage):
             )
         except Exception as e:
             print(f"Failed to process message: {e}")
+            logger.error(f"Failed to process message: {e}")
 
 async def start_consuming(queue_name, callback):
-    channel = await get_rabbitmq_channel()
+    while True:
+        try:
+            channel = await get_rabbitmq_channel()
+            queue = await channel.declare_queue(queue_name, durable=True)
 
-    queue = await channel.declare_queue(queue_name, durable=True)
-    
-    # 设置消费回调函数
-    await queue.consume(callback)
+            # 设置消费回调函数
+            await queue.consume(callback)
 
-    print(f'Waiting for messages in {queue_name}. To exit press CTRL+C')
-    await asyncio.Future()  # 保持事件循环运行
+            print(f'Waiting for messages in {queue_name}. To exit press CTRL+C')
+            logger.info(f'Waiting for messages in {queue_name}. To exit press CTRL+C')
+            await asyncio.Future()  # 保持事件循环运行
+
+        except aio_pika.exceptions.AMQPConnectionError as e:
+            print(f"Connection failed: {e}, retrying in 5 seconds...")
+            logger.error(f"Connection failed: {e}, retrying in 5 seconds...")
+            await asyncio.sleep(5)  # 等待 5 秒后重试
+        except Exception as e:
+            print(f"Failed to start consuming: {e}")
+            logger.error(f"Failed to start consuming: {e}")
+            await asyncio.sleep(1)

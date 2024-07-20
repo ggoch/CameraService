@@ -13,7 +13,9 @@ class PredictThing():
     def __init__(self):
         cuda_available = torch.cuda.is_available()
         print("CUDA available:", cuda_available)
-        self.model = YOLO(settings.thing_predict_model_path)
+        init_model_img = cv2.imread("test_img.jpg")
+        self.model = YOLO(settings.thing_predict_model_path, task=settings.thing_predict_model_task)  # Load model
+        self.model.predict(init_model_img,conf=0.25,imgsz=640)  # 第一次偵測會比較久，先做初始化
 
     def detect(self, image: np.ndarray):
         crop_image = self.crop_lane_area(image)

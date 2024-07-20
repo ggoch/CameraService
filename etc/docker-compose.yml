@@ -41,18 +41,6 @@ services:
         RABBITMQ_DEFAULT_USER: 'ggoch'
         RABBITMQ_DEFAULT_PASS: 'ggoch'
         RABBITMQ_DEFAULT_VHOST: "/"
-    # command: "/bin/bash -c \"rabbitmq-plugins enable --offline rabbitmq_mqtt rabbitmq_web_mqtt rabbitmq_amqp1_0; rabbitmq-server\""
-    # command: "/bin/bash -c \"rabbitmq-plugins enable --offline rabbitmq_mqtt;rabbitmq-server\""
-    command: >
-      /bin/bash -c "
-      rabbitmq-plugins enable --offline rabbitmq_mqtt;
-      rabbitmq-server -detached;
-      until rabbitmqctl status; do
-        sleep 5;
-      done;
-      /rabbitmq-init.sh;
-      rabbitmqctl stop;
-      rabbitmq-server"
     ports:
         - '15672:15672'
         - '5672:5672'
@@ -122,6 +110,15 @@ services:
   #     - ./backend/camera_save:/usr/backend/camera_save
   #     - ./backend/models:/usr/backend/models
   #   restart: always
+
+  mock_camera:
+    image: mock_camera:latest
+    container_name: mock_camera
+    env_file:
+      - ./backend/.env/.env.dev
+    depends_on:
+      redis:
+        condition: service_healthy  
 
 volumes:
   fastapi_tutorial_postgres_dev:
