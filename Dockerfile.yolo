@@ -1,0 +1,19 @@
+FROM ultralytics/ultralytics AS builder
+
+# 工作目录
+WORKDIR /usr/backend
+
+# 安装构建依赖
+RUN apt-get update && apt-get install -y gcc libpq-dev
+
+# 复制 requirements.txt 并安装依赖
+COPY ./requirements-yolo.txt /usr/backend/requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 创建非 root 用户
+RUN useradd -ms /bin/bash celeryuser
+
+# 复制应用代码
+COPY . /usr/backend/
+
+USER celeryuser
