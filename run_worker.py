@@ -1,6 +1,9 @@
 import argparse
 import os
 from dotenv import load_dotenv
+import logging
+import subprocess
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run the server in different modes.")
@@ -28,5 +31,15 @@ if __name__ == "__main__":
     os.environ["DB_TYPE"] = args.db
 
      # 運行 Celery 工作進程的命令
-    os.system('celery -A works.celery_main worker --loglevel=info -P eventlet')
+    # os.system('celery -A works.celery_main worker --loglevel=info -P eventlet')
+    # os.system('celery -A works.celery_main worker --pool=threads --concurrency=20 --loglevel=info')
     # os.system('celery -A works.celery_main worker --loglevel=info -c 2')
+
+    try:
+        # 運行 Celery 工作進程的命令
+        subprocess.run(
+            ['celery', '-A', 'works.celery_main', 'worker', '--pool=threads', '--concurrency=20', '--loglevel=info','--logfile=logs/celery_worker.log'],
+            check=True
+        )
+    except subprocess.CalledProcessError as e:
+        print(f"Celery worker process failed: {e}")

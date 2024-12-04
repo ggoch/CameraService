@@ -9,9 +9,14 @@ from dotenv import load_dotenv
 import logging
 import sys
 
+log_dir = "logs"  # 專案內的 logs 資料夾
+log_file = os.path.join(log_dir, "mock_camera.log")
+
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    handlers=[logging.StreamHandler(sys.stdout)])
+                    handlers=[
+                        logging.FileHandler(log_file),
+                        logging.StreamHandler(sys.stdout)])
 
 logger = logging.getLogger(__name__)
 

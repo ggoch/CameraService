@@ -1,8 +1,18 @@
 import argparse
 import os
-
+import logging
+import sys
 from dotenv import load_dotenv
 import uvicorn
+
+log_dir = "logs"  # 專案內的 logs 資料夾
+log_file = os.path.join(log_dir, "backend.log")
+
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    handlers=[
+                        logging.FileHandler(log_file),
+                        logging.StreamHandler(sys.stdout)])
 
 if __name__ == "__main__":
 
