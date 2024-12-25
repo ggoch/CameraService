@@ -63,7 +63,8 @@ def detect_thing_img(
         result = thing_model.detect(img)
         position = try_get_position(no)
 
-        event_data = {
+        if(result is True):
+            event_data = {
             "occur_time": timestamp,
             "thing_data": str("E006") if result is True else str("無"),
             "position": "車牌" if position is None else "前" if position == "1" else "後",
@@ -71,8 +72,8 @@ def detect_thing_img(
             "camera_name": camera_name,
             "no": no
             }
-        
-        publish_rabbitmq_event(event_data, 'thing_detection_queue')
+
+            publish_rabbitmq_event(event_data, 'thing_detection_queue')
 
         if result is None:
             print(f"未能檢測到圖像中的物料，消息 ID 為 {message_id}")

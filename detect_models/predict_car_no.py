@@ -78,8 +78,12 @@ class PredictCarNo():
 
             for result in convert_result:
                 if len(result['text']) >= 5:
+                    if result['text'].isdigit():  # 檢查是否全為數字
+                        print(f"Predict car no invalid (all numbers): {result['text']}")
+                        return True, img, None  # 全為數字，返回無效
+                    
                     print(f"Predict car no success: {result['text']}")
-                    return True,img,result['text']
+                    return True, img, result['text']
                 
             print(f"Not find any car no in image")
             return False,img,None
