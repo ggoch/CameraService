@@ -60,8 +60,8 @@ def detect_thing_img(
         # else:
         #     print(f"Failed to save image at {save_path}")
 
-        result = thing_model.detect(img)
-        position = try_get_position(no)
+        result,result_img = thing_model.detect(img)
+        position = try_get_position(no)        
 
         if(result is True):
             event_data = {
