@@ -17,12 +17,12 @@ class PredictThing():
         self.model = YOLO(settings.thing_predict_model_path, task=settings.thing_predict_model_task)  # Load model
         self.model.predict(init_model_img,conf=0.25,imgsz=640)  # 第一次偵測會比較久，先做初始化
 
-    def detect(self, image: np.ndarray):
+    def detect(self, image: np.ndarray,plot=False):
         crop_image = self.crop_lane_area(image)
         
-        return self.predict_thing_img(crop_image,0.85)
+        return self.predict_thing_img(crop_image,0.85,plot=plot)
     
-    def predict_thing_img(self,img,conf=0.25,imgsz=640,e006_need_count=2):
+    def predict_thing_img(self,img,conf=0.25,imgsz=640,e006_need_count=2,plot=False):
         """
         預測指定影像中的物件，並判斷是否有指定數量的E006
         """
@@ -31,6 +31,9 @@ class PredictThing():
             results = self.model.predict(img,conf=conf,imgsz=imgsz)
 
             result = results[0]
+            
+            if plot:
+                img = result.plot()
 
             if result.masks is None:
                 print(f"Not find any thing in image")

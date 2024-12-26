@@ -38,6 +38,8 @@ class Settings():
     mock_publish_seconds:float = float(os.getenv("MOCK_PUBLISH_SECONDS"))
     mock_img_path:str = os.getenv("MOCK_IMG_PATH")
 
+    save_image:bool = os.getenv("SAVE_IMAGE", "").lower() in ["1", "true","True"]
+
 @lru_cache()
 def get_settings():
     load_dotenv( f".env.{os.getenv('APP_MODE')}")

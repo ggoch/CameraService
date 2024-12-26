@@ -9,7 +9,10 @@ from detect_models.get_detect_model import get_model
 import logging
 from works.celery_app import celery_app
 from works.rabbitmq_channel import publish_rabbitmq_event
+from datetime import datetime
+from setting.config import get_settings
 
+settings = get_settings()
 model = get_model('PredictCarNo')
 logger = logging.getLogger(__name__)
 
@@ -42,15 +45,18 @@ def detect_car_no_img(
             logger.error(f"解碼圖像失敗，消息 ID 為 {message_id}")
             return
 
-        save_dir = os.path.join(path_to_save, f'{message_id}')
+        today = datetime.now()
+        formatted_date = today.strftime("%Y-%m-%d")
+
+        save_dir = os.path.join(path_to_save,"car_no",formatted_date,f'{message_id}')
 
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
 
-        result,img,car_no = model.detect(img)
+        result,result_img,car_no = model.detect(img,settings.save_image)
         position = try_get_position(no)
 
-        if result is True:
+        if result is True and car_no is not None:
             event_data = {
             "occur_time": timestamp,
             "car_no": car_no if result else str("無"),
@@ -61,6 +67,23 @@ def detect_car_no_img(
             }
         
             publish_rabbitmq_event(event_data, 'car_no_detection_queue')
+
+        if(result is not None and car_no is not None and settings.save_image is True):
+            # 儲存處理後的影像
+            datetime_object = datetime.strptime(timestamp, "%Y/%m/%d %p %I:%M:%S")
+
+            # 將 datetime 格式化為 24 小時制
+            formatted_datetime = datetime_object.strftime("%Y-%m-%d_%H-%M-%S")
+            save_path = os.path.join(save_dir, f'car_no_{formatted_datetime}.png')
+            origin_save_path = os.path.join(save_dir, f'car_no_origin_{formatted_datetime}.png')
+            success = cv2.imwrite(save_path, result_img)
+            cv2.imwrite(origin_save_path, img)
+
+            if success:
+                print(f"Image saved successfully at {save_path}")
+            else:
+                print(f"Failed to save image at {save_path}")
+
 
         if result is None:
             print(f"未能檢測到圖像中的車牌，消息 ID 為 {message_id}")

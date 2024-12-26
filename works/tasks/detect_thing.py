@@ -9,8 +9,10 @@ from detect_models.get_detect_model import get_model
 import logging
 from works.celery_app import celery_app
 from works.rabbitmq_channel import publish_rabbitmq_event
+from datetime import datetime
+from setting.config import get_settings
 
-
+settings = get_settings()
 thing_model = get_model('PredictThing')
 logger = logging.getLogger(__name__)
 
@@ -42,25 +44,17 @@ def detect_thing_img(
             print(f"解碼圖像失敗，消息 ID 為 {message_id}")
             logger.error(f"解碼圖像失敗，消息 ID 為 {message_id}")
             return
+        
+        today = datetime.now()
+        formatted_date = today.strftime("%Y-%m-%d")
 
-        save_dir = os.path.join(path_to_save, f'{message_id}')
+        save_dir = os.path.join(path_to_save,"thing",formatted_date,f'{message_id}')
 
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
 
-        # 儲存處理後的影像
-        # print(f'processed_image_{readable_timestamp}.png')
-        # save_path = os.path.join(save_dir, f'processed_image_{readable_timestamp}.png')
-        # success = cv2.imwrite(save_path, img)
 
-
-
-        # if success:
-        #     print(f"Image saved successfully at {save_path}")
-        # else:
-        #     print(f"Failed to save image at {save_path}")
-
-        result,result_img = thing_model.detect(img)
+        result,result_img = thing_model.detect(img,settings.save_image)
         position = try_get_position(no)        
 
         if(result is True):
@@ -74,6 +68,22 @@ def detect_thing_img(
             }
 
             publish_rabbitmq_event(event_data, 'thing_detection_queue')
+
+        if(result is True and settings.save_image):
+            # 儲存處理後的影像
+            datetime_object = datetime.strptime(timestamp, "%Y/%m/%d %p %I:%M:%S")
+
+            # 將 datetime 格式化為 24 小時制
+            formatted_datetime = datetime_object.strftime("%Y-%m-%d_%H-%M-%S")
+            save_path = os.path.join(save_dir, f'thing_{formatted_datetime}.png')
+            origin_save_path = os.path.join(save_dir, f'thing_origin_{formatted_datetime}.png')
+            success = cv2.imwrite(save_path, result_img)
+            cv2.imwrite(origin_save_path, img)
+
+            if success:
+                print(f"Image saved successfully at {save_path}")
+            else:
+                print(f"Failed to save image at {save_path}")
 
         if result is None:
             print(f"未能檢測到圖像中的物料，消息 ID 為 {message_id}")

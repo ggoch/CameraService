@@ -6,13 +6,13 @@ from datetime import datetime
 class ThingPredictLog(Base):
     __tablename__ = "ThingPredictLog"
     id:Mapped[BaseType.uuid_primary_key]
-    occur_time:Mapped[datetime]
+    occur_time:Mapped[datetime] = mapped_column(index=True)
     thing_data:Mapped[str]
     position:Mapped[BaseType.str_30]
     lane_name:Mapped[BaseType.str_60]
     camera_name:Mapped[BaseType.str_60]
     no:Mapped[BaseType.str_60]
-    create_time:Mapped[BaseType.update_time]
+    create_time:Mapped[BaseType.update_time] = mapped_column(index=True)
 
     def __init__(self, occur_time:str,thing_data:str,position:str,lane_name:str,camera_name:str,no:str) -> None:
         self.occur_time = occur_time

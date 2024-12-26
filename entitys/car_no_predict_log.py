@@ -5,13 +5,13 @@ from datetime import datetime
 class CarNoPredictLog(Base):
     __tablename__ = "CarNoPredictLog"
     id:Mapped[BaseType.uuid_primary_key]
-    occur_time:Mapped[datetime]
+    occur_time:Mapped[datetime] = mapped_column(index=True)
     car_no:Mapped[str]
     position:Mapped[BaseType.str_30]
     lane_name:Mapped[BaseType.str_60]
     camera_name:Mapped[BaseType.str_60]
     no:Mapped[BaseType.str_60]
-    create_time:Mapped[BaseType.update_time]
+    create_time:Mapped[BaseType.update_time] = mapped_column(index=True)
 
     def __init__(self, occur_time:str,car_no:str,position:str,lane_name:str,camera_name:str,no:str) -> None:
         self.occur_time = occur_time

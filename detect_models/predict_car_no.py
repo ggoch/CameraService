@@ -17,10 +17,10 @@ class PredictCarNo():
         self.model = YOLO(settings.car_no_predict_model_path, task=settings.car_no_predict_model_task)  # Load model
         self.model.predict(init_model_img,conf=0.25,imgsz=1024)  # 第一次偵測會比較久，先做初始化
 
-    def detect(self, image: np.ndarray):
-        return self.predict_car_no_img(image,0.25)
+    def detect(self, image: np.ndarray,plot=False):
+        return self.predict_car_no_img(image,0.25,plot=plot)
     
-    def predict_car_no_img(self,img,conf=0.25,imgsz=1024):
+    def predict_car_no_img(self,img,conf=0.25,imgsz=1024,plot=False):
         """
         預測指定影像中的車牌號碼，如成功偵測則返回車牌號碼
         """
@@ -32,6 +32,9 @@ class PredictCarNo():
 
             license_plates = []
             texts = []
+
+            if plot:
+                img = results[0].plot()  # 繪製檢測結果
 
 
             # 遍歷檢測結果，分類車牌和文字
@@ -84,6 +87,12 @@ class PredictCarNo():
                     
                     print(f"Predict car no success: {result['text']}")
                     return True, img, result['text']
+            
+            for result in convert_result:
+                if len(result['text']) >= 2:
+                    if not result['text'].isdigit():  # 檢查是否全為數字
+                        print(f"Predict car no invalid (all numbers): {result['text']}")
+                        return False, img, result['text']  # 不全為數字，但車牌捕捉異常，返回無效
                 
             print(f"Not find any car no in image")
             return False,img,None
